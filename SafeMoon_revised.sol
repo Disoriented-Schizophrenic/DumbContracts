@@ -788,7 +788,8 @@ contract SafeMoon is Context, IERC20, Ownable {
 
     function balanceOf(address account) public view override returns (uint256) {
         if (_isExcluded[account]) return _tOwned[account];
-        return tokenFromReflection(_rOwned[account]);
+        // return tokenFromReflection(_rOwned[account]);
+        return _rOwned[account];
     }
 
     function transfer(address recipient, uint256 amount) public override returns (bool) {
@@ -821,9 +822,9 @@ contract SafeMoon is Context, IERC20, Ownable {
         return true;
     }
 
-    function isExcludedFromReward(address account) public view returns (bool) {
-        return _isExcluded[account];
-    }
+    // function isExcludedFromReward(address account) public view returns (bool) {
+    //     return _isExcluded[account];
+    // }
 
     function totalFees() public view returns (uint256) {
         return _tFeeTotal;
@@ -838,45 +839,45 @@ contract SafeMoon is Context, IERC20, Ownable {
         _tFeeTotal = _tFeeTotal.add(tAmount);
     }
 
-    function reflectionFromToken(uint256 tAmount, bool deductTransferFee) public view returns(uint256) {
-        require(tAmount <= _tTotal, "Amount must be less than supply");
-        if (!deductTransferFee) {
-            (uint256 rAmount,,,,,) = _getValues(tAmount);
-            return rAmount;
-        } else {
-            (,uint256 rTransferAmount,,,,) = _getValues(tAmount);
-            return rTransferAmount;
-        }
-    }
+    // function reflectionFromToken(uint256 tAmount, bool deductTransferFee) public view returns(uint256) {
+    //     require(tAmount <= _tTotal, "Amount must be less than supply");
+    //     if (!deductTransferFee) {
+    //         (uint256 rAmount,,,,,) = _getValues(tAmount);
+    //         return rAmount;
+    //     } else {
+    //         (,uint256 rTransferAmount,,,,) = _getValues(tAmount);
+    //         return rTransferAmount;
+    //     }
+    // }
 
-    function tokenFromReflection(uint256 rAmount) public view returns(uint256) {
-        require(rAmount <= _rTotal, "Amount must be less than total reflections");
-        uint256 currentRate =  _getRate();
-        return rAmount.div(currentRate);
-    }
+    // function tokenFromReflection(uint256 rAmount) public view returns(uint256) {
+    //     require(rAmount <= _rTotal, "Amount must be less than total reflections");
+    //     uint256 currentRate =  _getRate();
+    //     return rAmount.div(currentRate);
+    // }
 
-    function excludeFromReward(address account) public onlyOwner() {
-        // require(account != 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D, 'We can not exclude Uniswap router.');
-        require(!_isExcluded[account], "Account is already excluded");
-        if(_rOwned[account] > 0) {
-            _tOwned[account] = tokenFromReflection(_rOwned[account]);
-        }
-        _isExcluded[account] = true;
-        _excluded.push(account);
-    }
+    // function excludeFromReward(address account) public onlyOwner() {
+    //     // require(account != 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D, 'We can not exclude Uniswap router.');
+    //     require(!_isExcluded[account], "Account is already excluded");
+    //     if(_rOwned[account] > 0) {
+    //         _tOwned[account] = tokenFromReflection(_rOwned[account]);
+    //     }
+    //     _isExcluded[account] = true;
+    //     _excluded.push(account);
+    // }
 
-    function includeInReward(address account) external onlyOwner() {
-        require(_isExcluded[account], "Account is already excluded");
-        for (uint256 i = 0; i < _excluded.length; i++) {
-            if (_excluded[i] == account) {
-                _excluded[i] = _excluded[_excluded.length - 1];
-                _tOwned[account] = 0;
-                _isExcluded[account] = false;
-                _excluded.pop();
-                break;
-            }
-        }
-    }
+    // function includeInReward(address account) external onlyOwner() {
+    //     require(_isExcluded[account], "Account is already excluded");
+    //     for (uint256 i = 0; i < _excluded.length; i++) {
+    //         if (_excluded[i] == account) {
+    //             _excluded[i] = _excluded[_excluded.length - 1];
+    //             _tOwned[account] = 0;
+    //             _isExcluded[account] = false;
+    //             _excluded.pop();
+    //             break;
+    //         }
+    //     }
+    // }
         function _transferBothExcluded(address sender, address recipient, uint256 tAmount) private {
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
@@ -1159,8 +1160,4 @@ contract SafeMoon is Context, IERC20, Ownable {
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
-
-
-    
-
 }
